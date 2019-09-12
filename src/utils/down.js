@@ -73,23 +73,21 @@ const down = function (e, id) {
       const rotateY = e.pageY
       const xiangxianX = rotateX - initX
       const xiangxianY = rotateY - initY
+      let res = 0
       if (xiangxianX > 0 && xiangxianY > 0) {
         // 第四象限
-        const res = Math.round(Math.atan((rotateX - initX) / (rotateY - initY)) / (Math.PI / 180))
-        boxEle.style.transform = `rotate(${-res}deg)`
+        res = Math.round(Math.atan((rotateX - initX) / (rotateY - initY)) / (Math.PI / 180))
       } else if (xiangxianX > 0 && xiangxianY < 0) {
         // 第一象限
-        const res = Math.round(Math.atan((initY - rotateY) / (rotateX - initX)) / (Math.PI / 180))
-        boxEle.style.transform = `rotate(${-(res + 90)}deg)`
+        res = Math.round(Math.atan((initY - rotateY) / (rotateX - initX)) / (Math.PI / 180)) + 90
       } else if (xiangxianX < 0 && xiangxianY < 0) {
         // 第二象限
-        const res = Math.round(Math.atan((initX - rotateX) / (initY - rotateY)) / (Math.PI / 180))
-        boxEle.style.transform = `rotate(${-(res + 180)}deg)`
+        res = Math.round(Math.atan((initX - rotateX) / (initY - rotateY)) / (Math.PI / 180)) + 180
       } else if (xiangxianX < 0 && xiangxianY > 0) {
         // 第三象限
-        const res = Math.round(Math.atan((rotateY - initY) / (initX - rotateX)) / (Math.PI / 180))
-        boxEle.style.transform = `rotate(${-(res + 270)}deg)`
+        res = Math.round(Math.atan((rotateY - initY) / (initX - rotateX)) / (Math.PI / 180)) + 270
       }
+      boxEle.style.transform = `rotate(${-res}deg)`
     }
   } else {
     // 移动
