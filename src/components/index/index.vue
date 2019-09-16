@@ -1,8 +1,7 @@
 <template>
   <div id='box'>
     <silder v-if="operaType === 'text'"></silder>
-    <div class="container">
-      <!-- <test-img></test-img> -->
+    <div class="container" id="container">
       <editor-img id='img1'></editor-img>
       <!-- <editor-img id='img2'></editor-img> -->
       <editor-font id='font1'></editor-font>
@@ -15,7 +14,6 @@ import { mapState } from 'vuex'
 import getLocated from '../../utils/getLocated'
 import editorImg from '../../common/editorImg'
 import editorFont from '../../common/editorFont'
-import testImg from '../../components/index/testImg'
 import silder from '../../components/index/silder'
 export default {
   computed: mapState({
@@ -25,8 +23,7 @@ export default {
   components: {
     editorImg,
     editorFont,
-    silder,
-    testImg
+    silder
   },
   mounted () {
     document.getElementById('box').onmousedown = (e) => {
