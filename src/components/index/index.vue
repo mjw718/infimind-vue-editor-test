@@ -15,6 +15,7 @@ import getLocated from '../../utils/getLocated'
 import editorImg from '../../common/editorImg'
 import editorFont from '../../common/editorFont'
 import silder from '../../components/index/silder'
+import { transformFunction } from '../../utils/util'
 export default {
   computed: mapState({
     allowOperaId: state => state.allowOperaId,
@@ -27,7 +28,7 @@ export default {
   },
   mounted () {
     document.getElementById('box').onmousedown = (e) => {
-      const res = this.isExit(['img1', 'font1', 'fontSilder'], e.clientX, e.clientY)
+      const res = this.isExit(['img1', 'font1', 'fontSilder', 'rotate-ele'], e.clientX, e.clientY)
       if (!res) {
         return
       }
@@ -67,10 +68,8 @@ export default {
           for (let i = 0; i < arr.length; i++) {
             const obj = document.getElementById(arr[i])
             if (obj) {
-              const {t, l} = getLocated(obj)
-              const width = obj.getBoundingClientRect().width
-              const height = obj.getBoundingClientRect().height
-              if (t > _t && (t + height) < (_t + _h) && l > _l && (l + width) < (_l + _w)) {
+              const {minX, maxX, minY, maxY} = this.getXY(obj)
+              if (minY > _t && maxY < (_t + _h) && minX > _l && maxX < (_l + _w)) {
                 selected.push(arr[i])
               }
             }
@@ -96,15 +95,48 @@ export default {
       for (let i = 0; i < arr.length; i++) {
         const obj = document.getElementById(arr[i])
         if (obj) {
-          const {l, t} = getLocated(obj)
-          const width = obj.getBoundingClientRect().width
-          const height = obj.getBoundingClientRect().height
-          if (x > l && x < (l + width) && y > t && y < (t + height + 25)) {
+          const {minX, maxX, minY, maxY} = this.getXY(obj)
+          if (x > minX && x < maxX + 25 && y > minY && y < maxY + 25) {
             kaiguan = false
           }
         }
       }
       return kaiguan
+    },
+    getXY: function (obj) {
+      const container = getLocated(document.getElementById('container'))
+      const sty = window.getComputedStyle(obj, null)
+      const tr = sty.getPropertyValue('-webkit-transform') ||
+        sty.getPropertyValue('-moz-transform') ||
+        sty.getPropertyValue('-ms-transform') ||
+        sty.getPropertyValue('-o-transform') ||
+        sty.getPropertyValue('transform') ||
+        'FAIL'
+      let angle = 0
+      if (tr && tr !== 'none') {
+        let values = tr.split('(')[1].split(')')[0].split(',')
+        let a = values[0]
+        let b = values[1]
+        angle = Math.round(Math.atan2(b, a) * (180 / Math.PI))
+      }
+      const width = obj.getBoundingClientRect().width
+      const height = obj.getBoundingClientRect().height
+      const transformedRect = transformFunction({
+        x: obj.offsetLeft,
+        y: obj.offsetTop,
+        width,
+        height
+      }, angle)
+      const { point } = transformedRect
+      const xList = point.map(item => item.x)
+      const minX = Math.min(...xList) + container.l
+      const maxX = Math.max(...xList) + container.l
+
+      const yList = point.map(item => item.y)
+      const minY = Math.min(...yList) + container.t
+      const maxY = Math.max(...yList) + container.t
+
+      return {minX, maxX, minY, maxY}
     }
   }
 }
