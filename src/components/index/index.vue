@@ -17,6 +17,11 @@ import editorFont from '../../common/editorFont'
 import silder from '../../components/index/silder'
 import { transformFunction } from '../../utils/util'
 export default {
+  data () {
+    return {
+      eleList: ['img1', 'font1', 'fontSilder']
+    }
+  },
   computed: mapState({
     allowOperaId: state => state.allowOperaId,
     operaType: state => state.operaType
@@ -28,7 +33,7 @@ export default {
   },
   mounted () {
     document.getElementById('box').onmousedown = (e) => {
-      const res = this.isExit(['img1', 'font1', 'fontSilder', 'rotate-ele'], e.clientX, e.clientY)
+      const res = this.isExit([...this.eleList, 'rotate-ele'], e.clientX, e.clientY)
       if (!res) {
         return
       }
@@ -57,7 +62,7 @@ export default {
           selDiv.style.width = Math.abs(_x - startX) + 'px'
           selDiv.style.height = Math.abs(_y - startY) + 'px'
 
-          const arr = ['img1', 'font1', 'fontSilder']
+          const arr = this.eleList
           let selected = []
 
           const _l = selDiv.offsetLeft
