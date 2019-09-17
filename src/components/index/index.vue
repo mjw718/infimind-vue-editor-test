@@ -104,7 +104,7 @@ export default {
       return kaiguan
     },
     getXY: function (obj) {
-      const container = getLocated(document.getElementById('container'))
+      const container = getLocated(obj.parentNode)
       const sty = window.getComputedStyle(obj, null)
       const tr = sty.getPropertyValue('-webkit-transform') ||
         sty.getPropertyValue('-moz-transform') ||
