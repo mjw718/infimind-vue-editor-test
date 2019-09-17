@@ -37,6 +37,28 @@ export default {
     silder,
     pot
   },
+  created () {
+    this.$store.commit('addEle', {
+      id: 'img1',
+      locate: {
+        x: 0,
+        y: 0,
+        height: 100,
+        width: 100,
+        rotate: 0
+      }
+    })
+    this.$store.commit('addEle', {
+      id: 'font1',
+      locate: {
+        x: 100,
+        y: 0,
+        height: 100,
+        width: 100,
+        rotate: 0
+      }
+    })
+  },
   mounted () {
     // 框选相关
     document.getElementById('box').onmousedown = (e) => {

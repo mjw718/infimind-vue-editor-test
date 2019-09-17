@@ -155,8 +155,155 @@ function transformFunction (options, angle) {
   }
 }
 
+// 变形相关
+function draw (_this) {
+  const id = _this.id
+  const node = document.getElementById(id)
+  const obj = _this.existELeList.find(item => item.id === id)
+  const arr = JSON.parse(JSON.stringify(obj.locate))
+  const ops = {
+    left: arr.x + 'px',
+    top: arr.y + 'px',
+    height: arr.height + 'px',
+    width: arr.width + 'px',
+    transform: 'rotate(' + arr.rotate + 'deg)'
+  }
+  for (var index in ops) {
+    node['style'][index] = ops[index]
+  }
+}
+
+function editEleList (arr, id, _this) {
+  return (
+    _this.$store.commit('addEle', {
+      id,
+      locate: arr
+    })
+  )
+}
+
+function down (e, _this) {
+  const id = _this.id
+  const obj = _this.existELeList.find(item => item.id === id)
+  const arr = JSON.parse(JSON.stringify(obj.locate))
+  const box = document.getElementById(id)
+  const targetId = e.target.id
+
+  const containerBox = document.getElementById('container')
+  const container = getLocated(containerBox)
+  const containerX = container.l
+  const containerY = container.t
+
+  if (targetId === 'rotate-ele') { // 旋转
+    // 获取初始角度
+    const point = getLocated(box)
+    const width = box.getBoundingClientRect().width
+    const height = box.getBoundingClientRect().height
+    const initAngle = Math.atan2(e.pageY - (point.t + height / 2), e.pageX - (point.l + width / 2)) - arr.rotate * Math.PI / 180
+
+    document.onmousemove = () => {
+      // 旋转开始
+      const e = window.event
+      const angle = Math.atan2(e.pageY - (point.t + height / 2), e.pageX - (point.l + width / 2))
+
+      arr.rotate = Math.floor((angle - initAngle) * 180 / Math.PI)
+      editEleList(arr, id, _this)
+      draw(_this)
+    }
+  } else if (e.target.nodeName.toLowerCase() === 'i') { // 缩放
+    const ex = e.pageX - containerX
+    const ey = e.pageY - containerY
+    // 计算初始状态旋转后的rect
+    const transformedRect = transformFunction({
+      x: arr.x,
+      y: arr.y,
+      width: arr.width,
+      height: arr.height
+    }, arr.rotate)
+    // 取得旋转后的8点坐标
+    const { point } = transformedRect
+
+    // 获取当前点和对角线点
+    const pointAndOpposite = getPointAndOpposite(point, ex, ey)
+    const { opposite } = pointAndOpposite
+
+    // 对角线点的索引即为缩放基点索引
+    const baseIndex = opposite.index
+    const oppositeX = opposite.point.x
+    const oppositeY = opposite.point.y
+
+    // 鼠标释放点距离当前点对角线点的偏移量
+    const offsetWidth = Math.abs(ex - oppositeX)
+    const offsetHeight = Math.abs(ey - oppositeY)
+
+    // 记录最原始的状态
+    const oPoint = JSON.parse(JSON.stringify(arr))
+    document.onmousemove = () => {
+      const event = window.event
+      const nex = event.pageX - containerX
+      const ney = event.pageY - containerY
+      const scale = {
+        x: 1,
+        y: 1
+      }
+      let realScale = 1
+
+      // 判断是根据x方向的偏移量来计算缩放比还是y方向的来计算
+      if (offsetWidth > offsetHeight) {
+        realScale = Math.abs(nex - oppositeX) / offsetWidth
+      } else {
+        realScale = Math.abs(ney - oppositeY) / offsetHeight
+      }
+      if ([0, 2, 4, 6].indexOf(baseIndex) >= 0) {
+        scale.x = scale.y = realScale
+      } else if ([1, 5].indexOf(baseIndex) >= 0) {
+        scale.y = realScale
+      } else if ([3, 7].indexOf(baseIndex) >= 0) {
+        scale.x = realScale
+      }
+
+      const newRect = getNewRect(oPoint, scale, transformedRect, baseIndex)
+      arr.x = newRect.x
+      arr.y = newRect.y
+      arr.width = newRect.width
+      arr.height = newRect.height
+      editEleList(arr, id, _this)
+      draw(_this)
+    }
+  } else { // 移动
+    const event = window.event
+    const deltaX = event.pageX - containerX - arr.x
+    const deltaY = event.pageY - containerY - arr.y
+
+    document.onmousemove = (e) => {
+      arr.x = e.pageX - containerX - deltaX
+      arr.y = e.pageY - containerY - deltaY
+      editEleList(arr, id, _this)
+      draw(_this)
+    }
+  }
+  document.onmouseup = () => {
+    document.onmousemove = null
+    document.onmouseup = null
+  }
+}
+
+function getLocated (obj) {
+  let t = obj.offsetTop
+  let l = obj.offsetLeft
+  while (obj.offsetParent !== null) {
+    obj = obj.offsetParent
+    t += obj.offsetTop
+    l += obj.offsetLeft
+  }
+  return {t, l}
+}
+
 export {
   getPointAndOpposite,
   getNewRect,
-  transformFunction
+  transformFunction,
+  draw,
+  editEleList,
+  down
 }
