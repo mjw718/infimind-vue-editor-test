@@ -6,6 +6,10 @@
       <!-- <editor-img id='img2'></editor-img> -->
       <editor-font id='font1'></editor-font>
     </div>
+    <div id="operate-wrapper" class="operate-wrapper" v-if="this.allowOperaId.length > 1">
+      <el-button type="primary" @click="toGroup">成组</el-button>
+    </div>
+    <pot id='backPot' style="display: none"></pot>
   </div>
 </template>
 
@@ -16,6 +20,7 @@ import editorImg from '../../common/editorImg'
 import editorFont from '../../common/editorFont'
 import silder from '../../components/index/silder'
 import { transformFunction } from '../../utils/util'
+import pot from '../../common/pot'
 export default {
   data () {
     return {
@@ -29,11 +34,13 @@ export default {
   components: {
     editorImg,
     editorFont,
-    silder
+    silder,
+    pot
   },
   mounted () {
+    // 框选相关
     document.getElementById('box').onmousedown = (e) => {
-      const res = this.isExit([...this.eleList, 'rotate-ele'], e.clientX, e.clientY)
+      const res = this.isExit([...this.eleList, 'rotate-ele', 'operate-wrapper'], e.clientX, e.clientY)
       if (!res) {
         return
       }
@@ -74,7 +81,7 @@ export default {
             const obj = document.getElementById(arr[i])
             if (obj) {
               const {minX, maxX, minY, maxY} = this.getXY(obj)
-              if (minY > _t && maxY < (_t + _h) && minX > _l && maxX < (_l + _w)) {
+              if (!(maxY < _t || minY > (_t + _h)) && !(maxX < _l || minX > (_l + _w))) {
                 selected.push(arr[i])
               }
             }
@@ -141,7 +148,60 @@ export default {
       const minY = Math.min(...yList) + container.t
       const maxY = Math.max(...yList) + container.t
 
-      return {minX, maxX, minY, maxY}
+      return {minX, maxX, minY, maxY, point}
+    },
+    // 成组
+    toGroup: function () {
+      const domList = []
+      let minXList = []
+      let maxXList = []
+      let minYList = []
+      let maxYList = []
+      for (let index = 0; index < this.allowOperaId.length; index++) {
+        const element = this.allowOperaId[index]
+        const obj = document.getElementById(element)
+
+        const point = this.getXY(obj).point
+        const xList = point.map(item => item.x)
+        const minX = Math.min(...xList)
+        const maxX = Math.max(...xList)
+        const yList = point.map(item => item.y)
+        const minY = Math.min(...yList)
+        const maxY = Math.max(...yList)
+        minXList.push(minX)
+        maxXList.push(maxX)
+        minYList.push(minY)
+        maxYList.push(maxY)
+        const newDom = obj.cloneNode(true)
+        domList.push(newDom)
+        obj.parentNode.removeChild(obj)
+      }
+      const container = document.getElementById('container')
+
+      let newdiv = document.createElement('div')
+      newdiv.id = 'div1'
+      const width = Math.max(...maxXList) - Math.min(...minXList)
+      const height = Math.max(...maxYList) - Math.min(...minYList)
+      const top = Math.min(...minYList)
+      const left = Math.min(...minXList)
+
+      newdiv.style.width = `${width}px`
+      newdiv.style.height = `${height}px`
+      newdiv.style.position = 'absolute'
+      newdiv.style.left = `${left}px`
+      newdiv.style.top = `${top}px`
+      newdiv.style.border = `1px solid red`
+      container.appendChild(newdiv)
+
+      const backPot = document.getElementById('backPot')
+      backPot.style.display = 'block'
+      newdiv.appendChild(backPot)
+
+      domList.forEach(element => {
+        element.style.left = `${JSON.parse(element.style.left.split('px')[0]) - left}px`
+        element.style.top = `${JSON.parse(element.style.top.split('px')[0]) - top}px`
+        newdiv.appendChild(element)
+      })
     }
   }
 }
@@ -162,5 +222,10 @@ export default {
   position: relative;
   z-index: 100;
   overflow: hidden;
+}
+.operate-wrapper {
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 </style>
