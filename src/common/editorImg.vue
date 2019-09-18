@@ -2,9 +2,8 @@
   <div
     :id="id"
     class="img-box"
-    :style="{'border':`${allowOperaId.indexOf(id) !== -1 ? '1px solid red' : ''}`}"
     @mousedown="boxIdDown">
-    <pot></pot>
+    <pot v-if="selectEle.findIndex(item => item.id === id) >= 0"></pot>
   </div>
 </template>
 
@@ -16,19 +15,19 @@ import { draw, down } from '../utils/util'
 export default {
   props: ['id'],
   computed: mapState({
-    allowOperaId: state => state.allowOperaId,
-    existELeList: state => state.existELeList
+    existELeList: state => state.existELeList,
+    selectEle: state => state.selectEle
   }),
   mounted () {
-    draw(this)
+    draw(this.id, this)
   },
   methods: {
     boxIdDown (e) {
-      this.$store.commit('toOpera', {
-        arr: [this.id],
+      this.$store.commit('changeSelectEle', [{
+        id: this.id,
         type: 'img'
-      })
-      down(e, this)
+      }])
+      down(e, this.id, this)
     }
   },
   components: {
@@ -44,5 +43,6 @@ export default {
   background-repeat : no-repeat;
   background-size: 100% 100%;
   z-index: 1;
+  border: 1px solid #000;
 }
 </style>

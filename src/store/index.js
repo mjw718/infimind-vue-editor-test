@@ -5,19 +5,20 @@ Vue.use(Vuex)
 
 const Store = new Vuex.Store({
   state: {
-    allowOperaId: [],
+    // 元素选中相关
+    selectEle: [],
+    // 文本变化相关
     fontFamily: 'Helvetica',
     fontSize: 14,
     colorVal: '#000',
-    operaType: '',
     // 存在的元素列表
     existELeList: []
   },
   mutations: {
-    toOpera (state, obj) {
-      state.allowOperaId = obj.arr
-      state.operaType = obj.type
+    changeSelectEle (state, par) {
+      state.selectEle = par
     },
+    // 文本变化相关
     changeFontFamily (state, obj) {
       state.fontFamily = obj.value
     },
@@ -27,6 +28,7 @@ const Store = new Vuex.Store({
     changeColor (state, val) {
       state.colorVal = val
     },
+    // 向元素列表中添加元素
     addEle (state, par) {
       if (state.existELeList.length === 0) {
         state.existELeList.push(par)

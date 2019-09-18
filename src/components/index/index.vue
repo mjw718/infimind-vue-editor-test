@@ -1,15 +1,15 @@
 <template>
   <div id='box'>
-    <silder v-if="operaType === 'text'"></silder>
+    <silder v-if="selectEle.length === 1 && selectEle[0].type === 'text'"></silder>
     <div class="container" id="container">
       <editor-img id='img1'></editor-img>
       <!-- <editor-img id='img2'></editor-img> -->
       <editor-font id='font1'></editor-font>
     </div>
-    <div id="operate-wrapper" class="operate-wrapper" v-if="this.allowOperaId.length > 1">
+    <div id="operate-wrapper" class="operate-wrapper" v-if="selectEle.length > 1">
       <el-button type="primary" @click="toGroup">成组</el-button>
     </div>
-    <pot id='backPot' style="display: none"></pot>
+    <pot id='backPot' v-show="selectEle.length === 1 && selectEle[0].id === 'div1'"></pot>
   </div>
 </template>
 
@@ -19,7 +19,7 @@ import getLocated from '../../utils/getLocated'
 import editorImg from '../../common/editorImg'
 import editorFont from '../../common/editorFont'
 import silder from '../../components/index/silder'
-import { transformFunction } from '../../utils/util'
+import { transformFunction, down } from '../../utils/util'
 import pot from '../../common/pot'
 export default {
   data () {
@@ -28,8 +28,8 @@ export default {
     }
   },
   computed: mapState({
-    allowOperaId: state => state.allowOperaId,
-    operaType: state => state.operaType
+    existELeList: state => state.existELeList,
+    selectEle: state => state.selectEle
   }),
   components: {
     editorImg,
@@ -62,10 +62,11 @@ export default {
   mounted () {
     // 框选相关
     document.getElementById('box').onmousedown = (e) => {
-      const res = this.isExit([...this.eleList, 'rotate-ele', 'operate-wrapper'], e.clientX, e.clientY)
+      const res = this.isExit([...this.eleList, 'rotate-ele', 'operate-wrapper', 'div1'], e.clientX, e.clientY)
       if (!res) {
         return
       }
+      this.$store.commit('changeSelectEle', [])
       let isSelect = true
       let startX = e.clientX
       let startY = e.clientY
@@ -77,7 +78,7 @@ export default {
       selDiv.style.left = startX + 'px'
       selDiv.style.top = startY + 'px'
 
-      let selectEle = []
+      let selectEleList = []
 
       document.onmousemove = (e) => {
         if (isSelect) {
@@ -108,18 +109,23 @@ export default {
               }
             }
           }
-          selectEle = selected
+          selectEleList = selected
         }
       }
       document.onmouseup = () => {
-        isSelect = false
-        if (selDiv) {
-          this.$store.commit('toOpera', {
-            arr: selectEle,
-            type: ''
+        if (selDiv && isSelect) {
+          const list = selectEleList.map(li => {
+            return {
+              id: li,
+              type: ''
+            }
           })
-          document.body.removeChild(selDiv)
+          this.$store.commit('changeSelectEle', list)
+          if (selDiv.parentNode) {
+            selDiv.parentNode.removeChild(selDiv)
+          }
         }
+        isSelect = false
       }
     }
   },
@@ -174,13 +180,18 @@ export default {
     },
     // 成组
     toGroup: function () {
+      const selectEleList = JSON.parse(JSON.stringify(this.selectEle))
+      this.$store.commit('changeSelectEle', [{
+        id: '',
+        type: ''
+      }])
       const domList = []
       let minXList = []
       let maxXList = []
       let minYList = []
       let maxYList = []
-      for (let index = 0; index < this.allowOperaId.length; index++) {
-        const element = this.allowOperaId[index]
+      for (let index = 0; index < selectEleList.length; index++) {
+        const element = selectEleList[index].id
         const obj = document.getElementById(element)
 
         const point = this.getXY(obj).point
@@ -194,8 +205,7 @@ export default {
         maxXList.push(maxX)
         minYList.push(minY)
         maxYList.push(maxY)
-        const newDom = obj.cloneNode(true)
-        domList.push(newDom)
+        domList.push(obj)
         obj.parentNode.removeChild(obj)
       }
       const container = document.getElementById('container')
@@ -212,11 +222,19 @@ export default {
       newdiv.style.position = 'absolute'
       newdiv.style.left = `${left}px`
       newdiv.style.top = `${top}px`
-      newdiv.style.border = `1px solid red`
+      newdiv.style.border = `1px solid #000`
       container.appendChild(newdiv)
-
+      this.$store.commit('addEle', {
+        id: 'div1',
+        locate: {
+          x: left,
+          y: top,
+          height: height,
+          width: width,
+          rotate: 0
+        }
+      })
       const backPot = document.getElementById('backPot')
-      backPot.style.display = 'block'
       newdiv.appendChild(backPot)
 
       domList.forEach(element => {
@@ -224,6 +242,14 @@ export default {
         element.style.top = `${JSON.parse(element.style.top.split('px')[0]) - top}px`
         newdiv.appendChild(element)
       })
+      document.getElementById('div1').onmousedown = (e) => {
+        // e.stopPropagation()
+        this.$store.commit('changeSelectEle', [{
+          id: 'div1',
+          type: ''
+        }])
+        down(e, 'div1', this)
+      }
     }
   }
 }
@@ -249,5 +275,8 @@ export default {
   position: absolute;
   top: 0;
   right: 0;
+}
+#backPot {
+  z-index: 2;
 }
 </style>

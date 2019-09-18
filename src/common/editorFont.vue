@@ -2,7 +2,6 @@
     <div
         :id = 'id'
         class="font-container"
-        :style="{'border':`${allowOperaId.indexOf(id) !== -1 ? '1px solid red' : ''}`}"
         @mousedown="isDown"
     >
       <div class="font-box">
@@ -14,7 +13,7 @@
           <input v-if="showInput" type="text" @keydown="showText" v-model="msg" />
           <span v-else @dblclick="toShowInput">{{msg}}</span>
         </div>
-        <pot></pot>
+        <pot v-if="selectEle.findIndex(item => item.id === id) >= 0"></pot>
       </div>
     </div>
 </template>
@@ -33,22 +32,22 @@ export default {
   },
   props: ['id'],
   computed: mapState({
-    allowOperaId: state => state.allowOperaId,
     fontFamily: state => state.fontFamily,
     fontSize: state => state.fontSize,
     colorVal: state => state.colorVal,
-    existELeList: state => state.existELeList
+    existELeList: state => state.existELeList,
+    selectEle: state => state.selectEle
   }),
   mounted () {
-    draw(this)
+    draw(this.id, this)
   },
   methods: {
     isDown: function (e) {
-      this.$store.commit('toOpera', {
-        arr: [this.id],
+      this.$store.commit('changeSelectEle', [{
+        id: this.id,
         type: 'text'
-      })
-      down(e, this)
+      }])
+      down(e, this.id, this)
     },
     toShowInput: function (params) {
       this.showInput = true
@@ -70,6 +69,7 @@ export default {
 .font-container {
   position: absolute;
   z-index: 1;
+  border: 1px solid #000;
 }
 
 .font-box {

@@ -156,8 +156,7 @@ function transformFunction (options, angle) {
 }
 
 // 变形相关
-function draw (_this) {
-  const id = _this.id
+function draw (id, _this) {
   const node = document.getElementById(id)
   const obj = _this.existELeList.find(item => item.id === id)
   const arr = JSON.parse(JSON.stringify(obj.locate))
@@ -182,8 +181,7 @@ function editEleList (arr, id, _this) {
   )
 }
 
-function down (e, _this) {
-  const id = _this.id
+function down (e, id, _this) {
   const obj = _this.existELeList.find(item => item.id === id)
   const arr = JSON.parse(JSON.stringify(obj.locate))
   const box = document.getElementById(id)
@@ -208,7 +206,7 @@ function down (e, _this) {
 
       arr.rotate = Math.floor((angle - initAngle) * 180 / Math.PI)
       editEleList(arr, id, _this)
-      draw(_this)
+      draw(id, _this)
     }
   } else if (e.target.nodeName.toLowerCase() === 'i') { // 缩放
     const ex = e.pageX - containerX
@@ -268,7 +266,7 @@ function down (e, _this) {
       arr.width = newRect.width
       arr.height = newRect.height
       editEleList(arr, id, _this)
-      draw(_this)
+      draw(id, _this)
     }
   } else { // 移动
     const event = window.event
@@ -279,7 +277,7 @@ function down (e, _this) {
       arr.x = e.pageX - containerX - deltaX
       arr.y = e.pageY - containerY - deltaY
       editEleList(arr, id, _this)
-      draw(_this)
+      draw(id, _this)
     }
   }
   document.onmouseup = () => {
