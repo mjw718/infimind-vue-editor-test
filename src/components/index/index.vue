@@ -238,8 +238,11 @@ export default {
       newdiv.appendChild(backPot)
 
       domList.forEach(element => {
-        element.style.left = `${JSON.parse(element.style.left.split('px')[0]) - left}px`
-        element.style.top = `${JSON.parse(element.style.top.split('px')[0]) - top}px`
+        element.style.left = `${(JSON.parse(element.style.left.split('px')[0]) - left) / width * 100}%`
+        element.style.top = `${(JSON.parse(element.style.top.split('px')[0]) - top) / height * 100}%`
+
+        element.style.width = `${JSON.parse(element.style.width.split('px')[0]) / width * 100}%`
+        element.style.height = `${JSON.parse(element.style.height.split('px')[0]) / height * 100}%`
         newdiv.appendChild(element)
       })
       document.getElementById('div1').onmousedown = (e) => {
