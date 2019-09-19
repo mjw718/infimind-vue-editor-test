@@ -262,6 +262,21 @@ export default {
         down(e, 'div1', this)
       }
     },
+    // // 获取中心点
+    // getCenter: function (obj, width, height) {
+    //   const transformedRect = transformFunction({
+    //     x: obj.offsetLeft,
+    //     y: obj.offsetTop,
+    //     width,
+    //     height
+    //   }, this.getAngle(obj))
+    //   console.log(transformedRect)
+    //   const xList = transformedRect.point.map(item => item.x)
+    //   const x = this.sum(xList) / 8
+    //   const yList = transformedRect.point.map(item => item.y)
+    //   const y = this.sum(yList) / 8
+    //   return {x, y}
+    // },
     // 取消分组
     cancelGroup: function () {
       const ele = this.selectEle[0]
@@ -269,6 +284,7 @@ export default {
       const currentNode = document.getElementById(currentId)
       const parentNode = currentNode.parentNode
       const childDomList = ele.childEle.map(item => document.getElementById(item))
+      const currentAngle = this.getAngle(currentNode)
 
       const currentNodeWidth = currentNode.style.width.split('px')[0]
       const currentNodeHeight = currentNode.style.height.split('px')[0]
@@ -288,7 +304,7 @@ export default {
             y: itemTop,
             height: itemHeight,
             width: itemWidth,
-            rotate: this.getAngle(currentNode)
+            rotate: currentAngle + this.existELeList.find(ele => ele.id === item.id).locate.rotate
           }
         })
         parentNode.appendChild(item)

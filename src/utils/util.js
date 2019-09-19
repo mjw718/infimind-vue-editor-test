@@ -297,11 +297,21 @@ function getLocated (obj) {
   return {t, l}
 }
 
+// 数组求和
+function sum (arr) {
+  let s = 0
+  arr.forEach(function (val, idx, arr) {
+    s += val
+  }, 0)
+  return s
+}
+
 export {
   getPointAndOpposite,
   getNewRect,
   transformFunction,
   draw,
   editEleList,
-  down
+  down,
+  sum
 }
