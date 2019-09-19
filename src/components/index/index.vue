@@ -6,8 +6,9 @@
       <!-- <editor-img id='img2'></editor-img> -->
       <editor-font id='font1'></editor-font>
     </div>
-    <div id="operate-wrapper" class="operate-wrapper" v-if="selectEle.length > 1">
-      <el-button type="primary" @click="toGroup">成组</el-button>
+    <div id="operate-wrapper" class="operate-wrapper">
+      <el-button type="primary" v-if="selectEle.length > 1" @click="toGroup">成组</el-button>
+      <el-button type="primary" v-if="selectEle.length ===1 && selectEle[0].isGroup" @click="cancelGroup">取消成组</el-button>
     </div>
     <pot id='backPot' v-show="selectEle.length === 1 && selectEle[0].id === 'div1'"></pot>
   </div>
@@ -19,7 +20,7 @@ import getLocated from '../../utils/getLocated'
 import editorImg from '../../common/editorImg'
 import editorFont from '../../common/editorFont'
 import silder from '../../components/index/silder'
-import { transformFunction, down } from '../../utils/util'
+import { transformFunction, down, draw } from '../../utils/util'
 import pot from '../../common/pot'
 export default {
   data () {
@@ -143,8 +144,7 @@ export default {
       }
       return kaiguan
     },
-    getXY: function (obj) {
-      const container = getLocated(obj.parentNode)
+    getAngle: function (obj) {
       const sty = window.getComputedStyle(obj, null)
       const tr = sty.getPropertyValue('-webkit-transform') ||
         sty.getPropertyValue('-moz-transform') ||
@@ -159,6 +159,11 @@ export default {
         let b = values[1]
         angle = Math.round(Math.atan2(b, a) * (180 / Math.PI))
       }
+      return angle
+    },
+    getXY: function (obj) {
+      const container = getLocated(obj.parentNode)
+      let angle = this.getAngle(obj)
       const width = obj.getBoundingClientRect().width
       const height = obj.getBoundingClientRect().height
       const transformedRect = transformFunction({
@@ -246,13 +251,53 @@ export default {
         newdiv.appendChild(element)
       })
       document.getElementById('div1').onmousedown = (e) => {
+        const childEle = domList.map(item => item.id)
         // e.stopPropagation()
         this.$store.commit('changeSelectEle', [{
           id: 'div1',
-          type: ''
+          type: '',
+          isGroup: true,
+          childEle
         }])
         down(e, 'div1', this)
       }
+    },
+    // 取消分组
+    cancelGroup: function () {
+      const ele = this.selectEle[0]
+      const currentId = ele.id
+      const currentNode = document.getElementById(currentId)
+      const parentNode = currentNode.parentNode
+      const childDomList = ele.childEle.map(item => document.getElementById(item))
+
+      const currentNodeWidth = currentNode.style.width.split('px')[0]
+      const currentNodeHeight = currentNode.style.height.split('px')[0]
+      const currentNodeLeft = currentNode.style.left.split('px')[0]
+      const currentNodeTop = currentNode.style.top.split('px')[0]
+
+      childDomList.forEach(item => {
+        const itemWidth = item.style.width.split('%')[0] / 100 * currentNodeWidth
+        const itemHeight = item.style.height.split('%')[0] / 100 * currentNodeHeight
+        const itemLeft = JSON.parse(item.style.left.split('%')[0] / 100 * currentNodeWidth) + JSON.parse(currentNodeLeft)
+        const itemTop = JSON.parse(item.style.top.split('%')[0] / 100 * currentNodeHeight) + JSON.parse(currentNodeTop)
+
+        this.$store.commit('addEle', {
+          id: item.id,
+          locate: {
+            x: itemLeft,
+            y: itemTop,
+            height: itemHeight,
+            width: itemWidth,
+            rotate: this.getAngle(currentNode)
+          }
+        })
+        parentNode.appendChild(item)
+        draw(item.id, this)
+      })
+      this.$store.commit('changeSelectEle', [])
+      const backPot = document.getElementById('backPot')
+      parentNode.appendChild(backPot)
+      parentNode.removeChild(currentNode)
     }
   }
 }
