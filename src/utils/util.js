@@ -181,7 +181,21 @@ function editEleList (arr, id, _this) {
   )
 }
 
+// // 获取中心点
+// function getCenter (id, _this) {
+//   const locate = _this.existELeList.find(item => item.id === id).locate
+//   const transformedRect = transformFunction({
+//     ...locate
+//   }, locate.rotate)
+//   const xList = transformedRect.point.map(item => item.x)
+//   const x = sum(xList) / 8
+//   const yList = transformedRect.point.map(item => item.y)
+//   const y = sum(yList) / 8
+//   return {x, y}
+// }
+
 function down (e, id, _this) {
+  // const childEle = _this.selectEle.length === 1 && _this.selectEle[0].childEle
   const obj = _this.existELeList.find(item => item.id === id)
   const arr = JSON.parse(JSON.stringify(obj.locate))
   const box = document.getElementById(id)
@@ -198,6 +212,8 @@ function down (e, id, _this) {
     const width = box.getBoundingClientRect().width
     const height = box.getBoundingClientRect().height
     const initAngle = Math.atan2(e.pageY - (point.t + height / 2), e.pageX - (point.l + width / 2)) - arr.rotate * Math.PI / 180
+    // const parCenter = getCenter(id, _this)
+    // const backlists = _this.existELeList.map(li => JSON.parse(JSON.stringify(li)))
 
     document.onmousemove = () => {
       // 旋转开始
@@ -205,6 +221,25 @@ function down (e, id, _this) {
       const angle = Math.atan2(e.pageY - (point.t + height / 2), e.pageX - (point.l + width / 2))
 
       arr.rotate = Math.floor((angle - initAngle) * 180 / Math.PI)
+      // // 子级元素
+      // if (childEle) {
+      //   childEle.forEach(ele => {
+      //     // const eleObj = document.getElementById(ele)
+      //     const childArr = JSON.parse(JSON.stringify(_this.existELeList.find(item => item.id === ele).locate))
+      //     // const center = getCenter(ele, _this)
+      //     // const distence = Math.sqrt(Math.pow(parCenter.x - center.x, 2) + Math.pow(parCenter.y - center.y, 2))
+      //     // console.log(arr.rotate)
+      //     // const sinVal = Math.sin(arr.rotate * 0.017453293) * distence
+      //     // const cosVal = Math.cos(arr.rotate * 0.017453293) * distence
+      //     childArr.rotate = arr.rotate
+      //     // if (arr.rotate > -90 && arr.rotate < 0) {
+      //     //   childArr.x = backlists.find(li => li.id === ele).locate.x - (distence - cosVal)
+      //     //   childArr.y = backlists.find(li => li.id === ele).locate.y - sinVal
+      //     // }
+      //     editEleList(childArr, ele, _this)
+      //     draw(ele, _this)
+      //   })
+      // }
       editEleList(arr, id, _this)
       draw(id, _this)
     }
@@ -276,6 +311,17 @@ function down (e, id, _this) {
     document.onmousemove = (e) => {
       arr.x = e.pageX - containerX - deltaX
       arr.y = e.pageY - containerY - deltaY
+      // // 子级元素
+      // if (childEle) {
+      //   childEle.forEach(ele => {
+      //     const eleObj = document.getElementById(ele)
+      //     const childArr = JSON.parse(JSON.stringify(_this.existELeList.find(item => item.id === ele).locate))
+      //     childArr.x = arr.x + eleObj.offsetLeft - box.offsetLeft
+      //     childArr.y = arr.y + eleObj.offsetTop - box.offsetTop
+      //     editEleList(childArr, ele, _this)
+      //     draw(ele, _this)
+      //   })
+      // }
       editEleList(arr, id, _this)
       draw(id, _this)
     }

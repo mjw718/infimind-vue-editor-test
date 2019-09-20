@@ -263,12 +263,12 @@ export default {
       }
     },
     // // 获取中心点
-    // getCenter: function (obj, width, height) {
+    // getCenter: function (obj) {
     //   const transformedRect = transformFunction({
     //     x: obj.offsetLeft,
     //     y: obj.offsetTop,
-    //     width,
-    //     height
+    //     width: JSON.parse(obj.style.width.split('px')[0]),
+    //     height: JSON.parse(obj.style.height.split('px')[0])
     //   }, this.getAngle(obj))
     //   console.log(transformedRect)
     //   const xList = transformedRect.point.map(item => item.x)
@@ -276,6 +276,29 @@ export default {
     //   const yList = transformedRect.point.map(item => item.y)
     //   const y = this.sum(yList) / 8
     //   return {x, y}
+    // },
+    // // 获取中心点
+    // getItemCenter: function (obj) {
+    //   const transformedRect = transformFunction({
+    //     x: obj.offsetLeft,
+    //     y: obj.offsetTop,
+    //     width: JSON.parse(obj.style.width.split('%')[0]),
+    //     height: JSON.parse(obj.style.height.split('%')[0])
+    //   }, this.getAngle(obj))
+    //   console.log(transformedRect)
+    //   const xList = transformedRect.point.map(item => item.x)
+    //   const x = this.sum(xList) / 8
+    //   const yList = transformedRect.point.map(item => item.y)
+    //   const y = this.sum(yList) / 8
+    //   return {x, y}
+    // },
+    // // 求和
+    // sum: function (arr) {
+    //   let s = 0
+    //   arr.forEach(function (val, idx, arr) {
+    //     s += val
+    //   }, 0)
+    //   return s
     // },
     // 取消分组
     cancelGroup: function () {
@@ -286,6 +309,7 @@ export default {
       const childDomList = ele.childEle.map(item => document.getElementById(item))
       const currentAngle = this.getAngle(currentNode)
 
+      // const currentCenter = this.getCenter(currentNode) // 中心点
       const currentNodeWidth = currentNode.style.width.split('px')[0]
       const currentNodeHeight = currentNode.style.height.split('px')[0]
       const currentNodeLeft = currentNode.style.left.split('px')[0]
@@ -297,6 +321,8 @@ export default {
         const itemLeft = JSON.parse(item.style.left.split('%')[0] / 100 * currentNodeWidth) + JSON.parse(currentNodeLeft)
         const itemTop = JSON.parse(item.style.top.split('%')[0] / 100 * currentNodeHeight) + JSON.parse(currentNodeTop)
 
+        // const itemCenter = this.getItemCenter(item) // 中心点
+        // const distence = Math.sqrt(Math.pow(currentCenter.x - itemCenter.x, 2) + Math.sqrt(Math.pow(currentCenter.y - itemCenter.y, 2)))
         this.$store.commit('addEle', {
           id: item.id,
           locate: {
